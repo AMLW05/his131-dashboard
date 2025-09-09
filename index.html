@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HIS-131 Course Development Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .progress-container {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .progress-bar {
+            background: #e9ecef;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            width: 31%;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: white;
+        }
+        
+        .status-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .status-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .status-card.complete {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+        
+        .status-card.in-progress {
+            border-color: #ffc107;
+            background: #fffef8;
+        }
+        
+        .status-card.pending {
+            border-color: #dc3545;
+            background: #fff8f8;
+        }
+        
+        .status-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .status-card h3 {
+            color: #495057;
+            margin-bottom: 10px;
+        }
+        
+        .status-card p {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        
+        .tabs-container {
+            padding: 0 30px 30px;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .tab-button {
+            padding: 10px 20px;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            border: none;
+            outline: none;
+        }
+        
+        .tab-button:hover {
+            background: #e9ecef;
+        }
+        
+        .tab-button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .module-card {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .module-card.complete {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+        
+        .module-card.in-progress {
+            background: #fff3cd;
+            border-color: #ffc107;
+        }
+        
+        .module-card.not-started {
+            background: #f8d7da;
+            border-color: #dc3545;
+        }
+        
+        .checklist {
+            text-align: left;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .checklist h3 {
+            margin-bottom: 15px;
+            color: #495057;
+        }
+        
+        .checklist-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checklist-item:last-child {
+            border-bottom: none;
+        }
+        
+        .checklist-item.complete::before {
+            content: "✅";
+        }
+        
+        .checklist-item.pending::before {
+            content: "⭕";
+        }
+        
+        .info-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .info-box h4 {
+            color: #495057;
+            margin-bottom: 10px;
+        }
+        
+        .info-box ul {
+            margin-left: 20px;
+            color: #6c757d;
+        }
+        
+        .info-box li {
+            margin: 5px 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .update-time {
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.9em;
+            padding: 10px;
+            border-top: 1px solid #dee2e6;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>HIS-131: American History I</h1>
+            <p>Course Development Dashboard - Canvas Integration Ready</p>
+        </div>
+        
+        <div class="progress-container">
+            <h2 style="margin-bottom: 15px; color: #495057;">Overall Course Development Progress</h2>
+            <div class="progress-bar">
+                <div class="progress-fill">31% Complete</div>
+            </div>
+            <p style="margin-top: 10px; color: #6c757d;">2 modules complete, Module 3 in active development, 5 modules pending</p>
+        </div>
+        
+        <div class="status-grid">
+            <div class="status-card complete">
+                <div class="status-icon">✅</div>
+                <h3>Module 1: Encounters</h3>
+                <p>Prehistory-1620<br><strong>Theme:</strong> Collision<br><strong>Status:</strong> COMPLETE<br>520 points developed</p>
+            </div>
+            
+            <div class="status-card complete">
+                <div class="status-icon">✅</div>
+                <h3>Module 2: Dissent</h3>
+                <p>1620-1763<br><strong>Theme:</strong> Tension<br><strong>Status:</strong> COMPLETE<br>All components ready</p>
+            </div>
+            
+            <div class="status-card in-progress">
+                <div class="status-icon">🔄</div>
+                <h3>Module 3: Revolution</h3>
+                <p>1763-1800<br><strong>Theme:</strong> Tipping Point<br><strong>Status:</strong> IN PROGRESS<br>Framework complete</p>
+            </div>
+            
+            <div class="status-card pending">
+                <div class="status-icon">⏳</div>
+                <h3>Modules 4-8</h3>
+                <p>1800-1865<br><strong>Themes:</strong> Freedom → Tragedy<br><strong>Status:</strong> PLANNED<br>Templates ready</p>
+            </div>
+        </div>
+        
+        <div class="tabs-container">
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="showTab('overview', this)">Overview</button>
+                <button class="tab-button" onclick="showTab('modules', this)">Module Details</button>
+                <button class="tab-button" onclick="showTab('components', this)">Components</button>
+                <button class="tab-button" onclick="showTab('innovation', this)">Innovation Features</button>
+                <button class="tab-button" onclick="showTab('next-steps', this)">Next Actions</button>
+            </div>
+            
+            <div id="overview" class="tab-content active">
+                <h3>Course Development Summary</h3>
+                
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-number">2.5/8</div>
+                        <div class="stat-label">Modules Developed</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">85%</div>
+                        <div class="stat-label">Auto-Graded Content</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">27+</div>
+                        <div class="stat-label">Choice Combinations</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">100%</div>
+                        <div class="stat-label">QM Standards Met</div>
+                    </div>
+                </div>
+                
+                <div class="info-box">
+                    <h4>🎯 Current Development Focus</h4>
+                    <ul>
+                        <li><strong>Module 3:</strong> Revolutionary Transformation (1763-1800)</li>
+                        <li><strong>Inquiry Question:</strong> "What makes something revolutionary?"</li>
+                        <li><strong>Status:</strong> Building interactive learning activities</li>
+                        <li><strong>Next Milestone:</strong> Complete Canvas New Quizzes implementation</li>
+                    </ul>
+                </div>
+                
+                <div class="info-box">
+                    <h4>✨ Course Innovations</h4>
+                    <ul>
+                        <li><strong>Canvas New Quizzes:</strong> Hot spots, branching scenarios, drag-and-drop interactions</li>
+                        <li><strong>Choice Board System:</strong> 27+ unique pathways per module</li>
+                        <li><strong>"What is America?" Thread:</strong> Semester-long inquiry project</li>
+                        <li><strong>AI-Resistant Design:</strong> Personal connections + current events integration</li>
+                        <li><strong>Efficiency Focus:</strong> 85% auto-graded for instructor time management</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div id="modules" class="tab-content">
+                <h3>Module Development Details</h3>
+                <div class="module-grid">
+                    <div class="module-card complete">
+                        <h4>Module 1</h4>
+                        <p>✅ Complete</p>
+                        <small>Encounters<br>520 points</small>
+                    </div>
+                    <div class="module-card complete">
+                        <h4>Module 2</h4>
+                        <p>✅ Complete</p>
+                        <small>Dissent<br>540 points</small>
+                    </div>
+                    <div class="module-card in-progress">
+                        <h4>Module 3</h4>
+                        <p>🔄 50% Done</p>
+                        <small>Revolution<br>In Development</small>
+                    </div>
+                    <div class="module-card not-started">
+                        <h4>Module 4</h4>
+                        <p>⏳ Planned</p>
+                        <small>Early Republic<br>+ Midterm Exam</small>
+                    </div>
+                    <div class="module-card not-started">
+                        <h4>Module 5</h4>
+                        <p>⏳ Planned</p>
+                        <small>Expansion<br>Democracy Test</small>
+                    </div>
+                    <div class="module-card not-started">
+                        <h4>Module 6</h4>
+                        <p>⏳ Planned</p>
+                        <small>Moral Crossroads<br>Reform Era</small>
+                    </div>
+                    <div class="module-card not-started">
+                        <h4>Module 7</h4>
+                        <p>⏳ Planned</p>
+                        <small>Road to Crisis<br>Final Portfolio</small>
+                    </div>
+                    <div class="module-card not-started">
+                        <h4>Module 8</h4>
+                        <p>⏳ Planned</p>
+                        <small>Civil War<br>+ Final Exam</small>
+                    </div>
+                </div>
+                
+                <div class="checklist">
+                    <h3>Module 3 Development Checklist</h3>
+                    <div class="checklist-item complete">Define Module Learning Objectives (MLOs)</div>
+                    <div class="checklist-item complete">Map YAWP Chapters 5-6 content</div>
+                    <div class="checklist-item complete">Select primary sources</div>
+                    <div class="checklist-item pending">Create Knowledge Check 3.1 (10 points)</div>
+                    <div class="checklist-item pending">Build 5 Learning Activities (400 points)</div>
+                    <div class="checklist-item pending">Design Project Choice Board options</div>
+                    <div class="checklist-item pending">Develop Module Quiz (20 points)</div>
+                    <div class="checklist-item pending">Test Canvas New Quizzes features</div>
+                    <div class="checklist-item pending">Create activity answer keys</div>
+                </div>
+            </div>
+            
+            <div id="components" class="tab-content">
+                <h3>Course Components Status</h3>
+                
+                <div class="checklist">
+                    <h3>✅ Completed Framework</h3>
+                    <div class="checklist-item complete">Course Learning Objectives (CLOs) - 5 defined</div>
+                    <div class="checklist-item complete">Module Learning Objectives (MLOs) - All 8 modules mapped</div>
+                    <div class="checklist-item complete">YAWP textbook chapter assignments</div>
+                    <div class="checklist-item complete">Primary source selections for all modules</div>
+                    <div class="checklist-item complete">Universal rubrics (Project, Discussion, Portfolio)</div>
+                    <div class="checklist-item complete">Choice Board Systems A & B</div>
+                    <div class="checklist-item complete">Learning Activities framework (5 per module)</div>
+                    <div class="checklist-item complete">"What is America?" project structure</div>
+                    <div class="checklist-item complete">AI-resistance strategies</div>
+                    <div class="checklist-item complete">QM Standards 2-6 alignment</div>
+                </div>
+                
+                <div class="checklist">
+                    <h3>✅ Completed Content</h3>
+                    <div class="checklist-item complete">Module 1: All components (520 points)</div>
+                    <div class="checklist-item complete">Module 2: All components (540 points)</div>
+                    <div class="checklist-item complete">Knowledge Checks 1.1, 1.2, 1.3, 2.1</div>
+                    <div class="checklist-item complete">Learning Activities 1.1-1.5, 2.1-2.5</div>
+                    <div class="checklist-item complete">Project Assignment Module 1</div>
+                    <div class="checklist-item complete">Student Implementation Guide</div>
+                    <div class="checklist-item complete">Instructor Implementation Guide</div>
+                </div>
+                
+                <div class="checklist">
+                    <h3>🔄 In Development</h3>
+                    <div class="checklist-item pending">Module 3 Knowledge Check</div>
+                    <div class="checklist-item pending">Module 3 Learning Activities</div>
+                    <div class="checklist-item pending">Module 3 Project Piece</div>
+                    <div class="checklist-item pending">Module 3 Quiz</div>
+                </div>
+            </div>
+            
+            <div id="innovation" class="tab-content">
+                <h3>Innovation Features</h3>
+                
+                <div class="info-box">
+                    <h4>🎮 Canvas New Quizzes Integration</h4>
+                    <ul>
+                        <li><strong>Hot Spot Questions:</strong> Interactive primary source analysis</li>
+                        <li><strong>Branching Scenarios:</strong> Adaptive learning paths based on responses</li>
+                        <li><strong>Drag-and-Drop:</strong> Categorization and sequencing activities</li>
+                        <li><strong>Progressive Disclosure:</strong> Content unlocks based on mastery</li>
+                        <li><strong>Multimedia Integration:</strong> Audio/video response options</li>
+                    </ul>
+                </div>
+                
+                <div class="info-box">
+                    <h4>🎲 Choice Board System</h4>
+                    <ul>
+                        <li><strong>Format Choices:</strong> Written, Visual, Audio, Video options</li>
+                        <li><strong>Connection Types:</strong> Local history, Family stories, Current events</li>
+                        <li><strong>Inquiry Focuses:</strong> Identity, Power & Justice, Change & Continuity</li>
+                        <li><strong>Result:</strong> 27+ unique combinations per module</li>
+                        <li><strong>Spinner Tools:</strong> Random selection for indecisive students</li>
+                    </ul>
+                </div>
+                
+                <div class="info-box">
+                    <h4>🛡️ AI-Resistance Strategies</h4>
+                    <ul>
+                        <li><strong>Personal Connections:</strong> Local/family history requirements</li>
+                        <li><strong>Current Events:</strong> Real-time news analysis (beyond AI training data)</li>
+                        <li><strong>Specific Citations:</strong> Exact YAWP chapter/section references required</li>
+                        <li><strong>Choice Combinations:</strong> Unique pathways prevent copying</li>
+                        <li><strong>Reflection Components:</strong> Individual growth documentation</li>
+                    </ul>
+                </div>
+                
+                <div class="info-box">
+                    <h4>📊 Assessment Distribution</h4>
+                    <ul>
+                        <li><strong>Knowledge Checks:</strong> 20 points (100% auto-graded)</li>
+                        <li><strong>Learning Activities:</strong> 400 points (100% auto-graded)</li>
+                        <li><strong>Project/Discussion:</strong> 100 points (rubric-based manual)</li>
+                        <li><strong>Module Quiz/Exam:</strong> 20 points (100% auto-graded)</li>
+                        <li><strong>Total per Module:</strong> 540 points (85% auto-graded)</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div id="next-steps" class="tab-content">
+                <h3>Development Action Plan</h3>
+                
+                <div class="info-box">
+                    <h4>🎯 Immediate Actions (This Week)</h4>
+                    <ul>
+                        <li>Complete Module 3 Knowledge Check questions from YAWP Ch. 5-6</li>
+                        <li>Build Activity 3.1: Primary Source Detective - Revolutionary Arguments</li>
+                        <li>Build Activity 3.2: Historical Thinking Builder - Revolutionary Causation</li>
+                        <li>Create Module 3 Project Choice Board specifications</li>
+                        <li>Test Canvas New Quizzes hot spot functionality</li>
+                    </ul>
+                </div>
+                
+                <div class="info-box">
+                    <h4>📅 Next Phase (Next Week)</h4>
+                    <ul>
+                        <li>Complete Activities 3.3-3.5 with auto-grading setup</li>
+                        <li>Design Module 3 Quiz with branching scenarios</li>
+                        <li>Create answer keys and rubrics for Module 3</li>
+                        <li>Begin Module 4 framework development</li>
+                        <li>Plan Midterm Exam structure for Module 4</li>
+                    </ul>
+                </div>
+                
+                <div class="info-box">
+                    <h4>🎓 Canvas Implementation</h4>
+                    <ul>
+                        <li>Upload Module 1-2 content to Canvas course shell</li>
+                        <li>Configure auto-grading formulas for activities</li>
+                        <li>Test student experience flow in Canvas</li>
+                        <li>Set up grade weighting and categories</li>
+                        <li>Create module prerequisites and requirements</li>
+                    </ul>
+                </div>
+                
+                <div class="info-box">
+                    <h4>📈 Success Metrics & Goals</h4>
+                    <ul>
+                        <li><strong>Short-term:</strong> Complete Module 3 by end of week (37.5% total completion)</li>
+                        <li><strong>Mid-term:</strong> Modules 1-4 complete by month end (50% completion)</li>
+                        <li><strong>Long-term:</strong> Full course ready for pilot by next semester</li>
+                        <li><strong>Quality:</strong> Maintain QM Standards compliance throughout</li>
+                        <li><strong>Efficiency:</strong> Keep 85% auto-graded assessment ratio</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="update-time">
+                Last Updated: December 2024 | HIS-131 Course Development
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showTab(tabName, button) {
+            // Hide all tab contents
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked button
+            button.classList.add('active');
+        }
+    </script>
+</body>
+</html>
